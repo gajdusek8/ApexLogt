@@ -288,7 +288,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
     <!-- JAVASCRIPT LOGIKA -->
     <script>
             let map, commMap, allRoutesMap, radarMap;
-            let startMarker, finishMarker, routePolyline, userMarker = null;
+            let startMarker, finishMarker, routePolyline, commRoutePolyline, userMarker = null;
             let routes = [], officialRoutes = [], communityRoutes = [];
             let currentRoute = null, currentCommRoute = null;
             let userCars = [], clubsList = [];
@@ -304,6 +304,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             let tempMarkers = [];
             let tempPolyline = null;
             let routedWaypoints = [];
+            let allRoutesPolylines = [];
 
             function toggleAuthModal() {
               document.getElementById('auth-modal').classList.toggle('hidden');
@@ -349,7 +350,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               if (currentUser) {
                 document.getElementById('auth-header-section').innerHTML = `
                   <span class="text-green-400 font-bold text-xs truncate max-w-[120px]">👤 ${currentUser.email}</span>
-                  <button onclick="logoutUser()" class="bg-red-600/20 text-red-400 border border-red-500/30 px-2 py-1 rounded-lg text-xs font-bold hover:bg-red-600 hover:text-white transition">Odhlásit</button>
+                  <button onclick="logoutUser()" class="bg-red-600/20 text-red-400 border border-red-500/30 px-2 py-1 rounded-lg text-xs font-bold hover:bg-red-600 hover:text-white transition cursor-pointer">Odhlásit</button>
                 `;
                 if (currentUser.email.trim().toLowerCase() === ADMIN_EMAIL.trim().toLowerCase()) {
                   const adminControls = document.getElementById('admin-route-controls');
@@ -367,7 +368,10 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 if(map) map.invalidateSize();
                 if(commMap) commMap.invalidateSize();
                 if(radarMap) { radarMap.invalidateSize(); fetchRadarUsers(); if(!radarInterval) radarInterval = setInterval(fetchRadarUsers, 4000); }
-                if(allRoutesMap) allRoutesMap.invalidateSize();
+                if(allRoutesMap) {
+                  allRoutesMap.invalidateSize();
+                  renderAllRoutesOnMap();
+                }
               }, 150);
               if(viewId === 'view-garage') loadUserCars();
               if(viewId === 'view-clubs') loadClubs();
@@ -438,7 +442,6 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               if(savedName) document.getElementById('reg-name').value = savedName;
             });
 
-            // POZNANÍ STARTU A CÍLE SE ZNAČKAMI
             function loadRouteById(id, type) {
               const targetRoute = routes.find(r => r.id === id);
               if(!targetRoute) return;
@@ -458,17 +461,36 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 finishMarker = L.marker(p2, { icon: finishIcon }).addTo(map);
                 routePolyline = L.polyline(targetRoute.waypoints || [p1, p2], {color: '#ef4444', weight: 5}).addTo(map);
                 map.fitBounds(routePolyline.getBounds());
+              } else {
+                currentCommRoute = targetRoute;
+                if(commRoutePolyline) commMap.removeLayer(commRoutePolyline);
+                commRoutePolyline = L.polyline(targetRoute.waypoints || [p1, p2], {color: '#3b82f6', weight: 5}).addTo(commMap);
+                commMap.fitBounds(commRoutePolyline.getBounds());
               }
             }
 
-            // VYŽÁDÁNÍ REAL-TIME POLOHY S GEOFENCE
+            function renderAllRoutesOnMap() {
+              if(!allRoutesMap) return;
+              allRoutesPolylines.forEach(p => allRoutesMap.removeLayer(p));
+              allRoutesPolylines = [];
+
+              routes.forEach(r => {
+                if(r.waypoints && r.waypoints.length > 0) {
+                  const color = r.is_official ? '#ef4444' : '#3b82f6';
+                  const pl = L.polyline(r.waypoints, { color: color, weight: 4 }).addTo(allRoutesMap);
+                  pl.bindPopup(`<b>${r.name}</b><br/>${r.is_official ? 'Oficiální trasa' : 'Komunitní trasa'}<br/>Vzdálenost: ${r.distance_km} km`);
+                  allRoutesPolylines.push(pl);
+                }
+              });
+            }
+
             function toggleGPS() {
               const btn = document.getElementById('btn-gps');
               const status = document.getElementById('gps-status');
 
               if (!isTracking) {
                 if (!navigator.geolocation) {
-                  return alert("Tůj prohlížeč nebo zařízení nepodporuje GPS Geolocation.");
+                  return alert("Tvé zařízení nepodporuje GPS Geolocation.");
                 }
 
                 isTracking = true;
@@ -484,7 +506,6 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
 
                     document.getElementById('speed').innerText = speedKmH;
 
-                    // Zobrazení pozice na mapě
                     if (userMarker) userMarker.setLatLng([lat, lng]);
                     else userMarker = L.circleMarker([lat, lng], { radius: 9, color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.9 }).addTo(map);
 
@@ -511,14 +532,14 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                         if (distToFinish <= 25) {
                           clearInterval(timerInterval);
                           hasStarted = false;
-                          alert("🏁 PROTLAČIL JSI CÍL! Tůj čas: " + document.getElementById('timer').innerText);
+                          alert("🏁 PROTLAČIL JSI CÍL! Tvůj čas: " + document.getElementById('timer').innerText);
                           toggleGPS();
                         }
                       }
                     }
                   },
                   (err) => {
-                    alert("Chyba získávání GPS polohy: " + err.message + ". Ujisti se, že máš v prohlížeči povolenou polohu.");
+                    alert("Chyba GPS polohy: " + err.message + ". Povol prosím přístup k polohovým službám v prohlížeči.");
                     toggleGPS();
                   },
                   { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
@@ -605,7 +626,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
 
             function saveProfileName() {
               const name = document.getElementById('reg-name').value.trim();
-              if(!name) return alert("Zadej přezdívka!");
+              if(!name) return alert("Zadej přezdívku!");
               localStorage.setItem('apex_user_name', name);
               alert("Přezdívka uložena!");
             }
@@ -621,12 +642,15 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
 
               if (isOfficial) {
                 document.getElementById('route-hint').classList.remove('hidden');
-                alert("Klikni na START a pak na CÍL.");
+                alert("Režim tvorby oficiální trasy zapnut! Klikni na START a CÍL.");
+              } else {
+                document.getElementById('comm-route-hint').classList.remove('hidden');
+                alert("Režim tvorby komunitní trasy zapnut! Klikni na START a CÍL.");
               }
             }
 
             async function finishAddingRoute() {
-              if (routedWaypoints.length === 0) return alert("Nejprve vytvoř trasu!");
+              if (routedWaypoints.length === 0) return alert("Nejprve klikni na mapu pro vytvoření trasy!");
               const routeName = prompt("Zadej název trasy:");
               if (!routeName) return;
 
@@ -651,7 +675,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
 
               const { error } = await db.from('routes').insert([newRouteData]);
               if (error) alert("Chyba při ukládání: " + error.message);
-              else { alert("Trasa uložena!"); location.reload(); }
+              else { alert("Trasa úspěšně uložena!"); location.reload(); }
             }
 
             async function fetchRoutes() {
@@ -663,9 +687,128 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               const sel = document.getElementById('route-select');
               if(sel) sel.innerHTML = officialRoutes.map(r => `<option value="${r.id}">${r.name} (${r.distance_km} km)</option>`).join('');
               if(officialRoutes.length > 0) loadRouteById(officialRoutes[0].id, 'official');
+
+              const commSel = document.getElementById('comm-route-select');
+              if(commSel) {
+                commSel.innerHTML = communityRoutes.length ? communityRoutes.map(r => `<option value="${r.id}">${r.name} (${r.distance_km} km)</option>`).join('') : '<option value="">Žádné komunitní trasy</option>';
+              }
+              if(communityRoutes.length > 0) loadRouteById(communityRoutes[0].id, 'community');
+
+              renderAllRoutesOnMap();
             }
 
             function loadSelectedRoute() { loadRouteById(document.getElementById('route-select').value, 'official'); }
+            function loadSelectedCommRoute() { loadRouteById(document.getElementById('comm-route-select').value, 'community'); }
+
+            // --- KLUBY ---
+            async function loadClubs() {
+              const { data, error } = await db.from('clubs').select('*');
+              if(error) {
+                console.error("Chyba načítání klubů:", error);
+                return;
+              }
+              clubsList = data || [];
+              const sel = document.getElementById('club-select');
+              if(sel) {
+                sel.innerHTML = `<option value="">-- Bez klubu --</option>` + clubsList.map(c => `<option value="${c.tag}">${c.name} [${c.tag}]</option>`).join('');
+              }
+            }
+
+            async function createNewClub() {
+              const name = document.getElementById('new-club-name').value.trim();
+              const tag = document.getElementById('new-club-tag').value.trim().toUpperCase();
+              if(!name || !tag) return alert("Vyplň název i zkratku klubu!");
+
+              const { error } = await db.from('clubs').insert([{ name, tag }]);
+              if(error) {
+                alert("Chyba při vytváření klubu: " + error.message);
+              } else {
+                alert("Klub úspěšně vytvořen!");
+                document.getElementById('new-club-name').value = '';
+                document.getElementById('new-club-tag').value = '';
+                loadClubs();
+              }
+            }
+
+            function joinSelectedClub() {
+              localStorage.setItem('apex_user_club_tag', document.getElementById('club-select').value);
+              alert("Klub uložen!");
+            }
+
+            // --- ŽIVÝ RADAR ---
+            async function fetchRadarUsers() {
+              const { data } = await db.from('live_radar').select('*');
+              if(!data) return;
+              const activeIds = new Set();
+              data.forEach(user => {
+                activeIds.add(user.id);
+                const latLng = [user.lat, user.lng];
+                if(radarMarkers[user.id]) {
+                  radarMarkers[user.id].setLatLng(latLng);
+                } else {
+                  radarMarkers[user.id] = L.circleMarker(latLng, { radius: 8, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.8 }).addTo(radarMap).bindPopup(`<b>${user.user_name}</b> [${user.club_tag || ''}]`);
+                }
+              });
+              Object.keys(radarMarkers).forEach(id => {
+                if(!activeIds.has(id)) { radarMap.removeLayer(radarMarkers[id]); delete radarMarkers[id]; }
+              });
+            }
+
+            function toggleRadarTracking() {
+              const btn = document.getElementById('btn-radar-toggle');
+              const status = document.getElementById('radar-status');
+              const userName = localStorage.getItem('apex_user_name') || (currentUser ? currentUser.email : 'Anonym');
+              const clubTag = localStorage.getItem('apex_user_club_tag') || '';
+
+              if(!isRadarActive) {
+                if(!navigator.geolocation) return alert("GPS není podporována.");
+                isRadarActive = true;
+                btn.innerText = "VYPNOUT SDÍLENÍ NA RADARU";
+                btn.classList.replace('bg-red-600', 'bg-gray-700');
+                status.innerText = "Sdílíš svou polohu na radaru...";
+
+                radarWatchId = navigator.geolocation.watchPosition(async pos => {
+                  await db.from('live_radar').upsert({
+                    user_name: userName,
+                    club_tag: clubTag,
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                    updated_at: new Date()
+                  }, { onConflict: 'user_name' });
+                }, err => {
+                  alert("Chyba radaru: " + err.message);
+                  toggleRadarTracking();
+                }, { enableHighAccuracy: true });
+              } else {
+                isRadarActive = false;
+                navigator.geolocation.clearWatch(radarWatchId);
+                btn.innerText = "ZAPNOUT SDÍLENÍ POLOHY NA RADARU";
+                btn.classList.replace('bg-gray-700', 'bg-red-600');
+                status.innerText = "Radar je vypnutý";
+              }
+            }
+
+            // --- GRAFY A TELEMETRIE ---
+            function initChart() {
+              const ctx = document.getElementById('speedChart');
+              if(!ctx) return;
+              if(speedChartInstance) speedChartInstance.destroy();
+              speedChartInstance = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                  labels: ['0s', '2s', '4s', '6s', '8s', '10s'],
+                  datasets: [{
+                    label: 'Rychlost (km/h)',
+                    data: [0, 45, 82, 110, 135, 120],
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    fill: true
+                  }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+              });
+            }
 
             function getDistance(lat1, lon1, lat2, lon2) {
               const R = 6371;
@@ -673,6 +816,11 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               const dLon = (lon2-lon1) * Math.PI / 180;
               const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
               return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            }
+
+            function populateLeaderboardRouteSelect() {
+              const sel = document.getElementById('lb-route-select');
+              if(sel) sel.innerHTML = officialRoutes.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
             }
     </script>
 </body>
