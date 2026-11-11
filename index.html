@@ -81,7 +81,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             </button>
             <div>
                 <h1 class="text-xl font-black italic text-red-500 tracking-wider">APEX<span class="text-white">LOG</span></h1>
-                <p class="text-[10px] text-gray-400">Multi-Waypoint Routing</p>
+                <p class="text-[10px] text-gray-400">Precision 50m Geofence & Replays</p>
             </div>
         </div>
 
@@ -102,7 +102,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 <button onclick="switchView('view-community-routes')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">👥 Komunitní Trasy & Měření</button>
                 <button onclick="switchView('view-radar')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">📡 Živý Radar Party</button>
                 <button onclick="switchView('view-all-map')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">🗺️ Všechny trasy na mapě</button>
-                <button onclick="switchView('view-leaderboard')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">🏆 Žebříčky & Výsledky</button>
+                <button onclick="switchView('view-leaderboard')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">🏆 Žebříčky & Replaye</button>
                 <button onclick="switchView('view-replays')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">📊 Telemetrie Grafy</button>
                 <button onclick="switchView('view-clubs')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">🛡️ Kluby & Týmy</button>
                 <button onclick="switchView('view-garage')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">🚗 Garáž & Profil</button>
@@ -174,7 +174,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             <div class="text-xs text-gray-400 text-center font-semibold" id="gps-status">GPS Vypnuto</div>
 
             <button id="btn-gps" onclick="toggleAutoGPS(true)" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl text-lg transition shadow-lg cursor-pointer">
-                SPOUSTIT AUTO-GPS SLEDOVÁNÍ (500m)
+                SPOUSTIT AUTO-GPS SLEDOVÁNÍ (50m)
             </button>
         </div>
     </div>
@@ -230,7 +230,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             <div class="text-xs text-gray-400 text-center font-semibold" id="comm-gps-status">GPS Vypnuto</div>
 
             <button id="btn-comm-gps" onclick="toggleAutoGPS(false)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-lg transition shadow-lg cursor-pointer">
-                SPOUSTIT AUTO-GPS SLEDOVÁNÍ (500m)
+                SPOUSTIT AUTO-GPS SLEDOVÁNÍ (50m)
             </button>
         </div>
     </div>
@@ -259,10 +259,10 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
         </div>
     </div>
 
-    <!-- ================= ŽEBŘÍČKY ================= -->
+    <!-- ================= ŽEBŘÍČKY & REPLAYE ================= -->
     <div id="view-leaderboard" class="app-view space-y-6">
         <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
-            <h2 class="font-bold text-red-500 text-sm tracking-wide">Žebříček reálných časů</h2>
+            <h2 class="font-bold text-red-500 text-sm tracking-wide">Žebříček reálných časů & Replaye</h2>
 
             <div class="grid grid-cols-2 gap-3">
                 <div>
@@ -283,12 +283,48 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs text-gray-300">
                     <thead class="bg-gray-800/80 text-gray-400">
-                        <tr><th class="p-3">#</th><th class="p-3">Jezdec</th><th class="p-3">Auto</th><th class="p-3 text-right">Čas</th></tr>
+                        <tr><th class="p-3">#</th><th class="p-3">Jezdec</th><th class="p-3">Auto</th><th class="p-3 text-right">Čas</th><th class="p-3 text-center">Replay</th></tr>
                     </thead>
                     <tbody id="leaderboard-body">
-                        <tr><td colspan="4" class="p-6 text-center text-gray-500">Zvol trasu výše</td></tr>
+                        <tr><td colspan="5" class="p-6 text-center text-gray-500">Zvol trasu výše</td></tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- PŘEHRÁVAČ REPLAYŮ -->
+        <div id="replay-card" class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4 shadow-xl hidden">
+            <div class="flex justify-between items-center">
+                <h3 id="replay-title" class="font-bold text-red-500 text-sm">Přehrávač Replaye</h3>
+                <button onclick="closeReplay()" class="text-xs text-gray-400 hover:text-white font-bold px-2 py-1 bg-gray-800 rounded-lg">Zavřít Replay</button>
+            </div>
+
+            <div id="replay-map"></div>
+
+            <div class="grid grid-cols-3 gap-2 bg-gray-950 p-3 rounded-xl border border-gray-800 text-center text-xs">
+                <div>
+                    <div class="text-gray-400 text-[10px]">AKTUÁLNÍ ČAS</div>
+                    <div id="replay-time" class="font-mono font-bold text-white text-lg">00:00.00</div>
+                </div>
+                <div>
+                    <div class="text-gray-400 text-[10px]">RYCHLOST</div>
+                    <div id="replay-speed" class="font-mono font-black text-red-500 text-lg">0 km/h</div>
+                </div>
+                <div>
+                    <div class="text-gray-400 text-[10px]">RYCHLOST PŘEHRÁVÁNÍ</div>
+                    <select id="replay-speed-mult" class="bg-gray-800 text-white font-bold p-1 rounded border border-gray-700 text-xs">
+                        <option value="1">1x (Reálný čas)</option>
+                        <option value="2">2x Rychleji</option>
+                        <option value="5">5x Rychleji</option>
+                        <option value="10">10x Rychleji</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="startReplay()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">▶ Přehrát</button>
+                <button onclick="pauseReplay()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">⏸ Pauza</button>
+                <button onclick="resetReplay()" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">↺ Od začátku</button>
             </div>
         </div>
     </div>
@@ -356,7 +392,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
 
     <!-- JAVASCRIPT LOGIKA -->
     <script>
-            let map, commMap, allRoutesMap, radarMap;
+            let map, commMap, allRoutesMap, radarMap, replayMap = null;
             let startMarker, finishMarker, routePolyline, commStartMarker, commFinishMarker, commRoutePolyline, userMarker = null;
             let routes = [], officialRoutes = [], communityRoutes = [];
             let currentRoute = null, currentCommRoute = null;
@@ -374,6 +410,17 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             let tempPolyline = null;
             let routedWaypoints = [];
             let allRoutesPolylines = [];
+
+            // Telemetrie během jízdy
+            let currentRunTelemetry = [];
+            let activeRunRouteId = null;
+
+            // Replay proměnné
+            let activeReplayData = null;
+            let replayMarker = null;
+            let replayPolyline = null;
+            let replayIndex = 0;
+            let replayTimer = null;
 
             function toggleAuthModal() {
               document.getElementById('auth-modal').classList.toggle('hidden');
@@ -431,6 +478,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 if(commMap) commMap.invalidateSize();
                 if(radarMap) { radarMap.invalidateSize(); fetchRadarUsers(); if(!radarInterval) radarInterval = setInterval(fetchRadarUsers, 4000); }
                 if(allRoutesMap) { allRoutesMap.invalidateSize(); renderAllRoutesOnMap(); }
+                if(replayMap) replayMap.invalidateSize();
               }, 150);
               if(viewId === 'view-garage') loadUserCars();
               if(viewId === 'view-clubs') loadClubs();
@@ -474,7 +522,6 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                   tempMarkers.push(marker);
 
                   if (routePoints.length >= 2) {
-                    // Překreslení trasy přes VŠECHNY zadané body (Waypoints)
                     updateTempRoutePolyline(targetMap);
                   }
                 });
@@ -488,7 +535,6 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
 
             async function updateTempRoutePolyline(targetMap) {
               if (routePoints.length < 2) return;
-              // Poskládáme souřadnice všech bodů oddělené středníkem pro OSRM API
               let coordsString = routePoints.map(p => `${p.lng},${p.lat}`).join(';');
               try {
                 const url = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`;
@@ -584,7 +630,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               });
             }
 
-            // AUTOMATICKÉ MĚŘENÍ S 500m GEOFENCE
+            // AUTOMATICKÉ MĚŘENÍ S 50m GEOFENCE & SBĚREM TELEMETRIE
             function toggleAutoGPS(isOfficial) {
               isOfficialTracking = isOfficial;
               const btn = isOfficial ? document.getElementById('btn-gps') : document.getElementById('btn-comm-gps');
@@ -601,9 +647,12 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
 
                 isTracking = true;
                 hasStarted = false;
+                currentRunTelemetry = [];
+                activeRunRouteId = activeRoute.id;
+
                 btn.innerText = "ZASTAVIT AUTO-GPS";
                 btn.classList.replace(isOfficial ? 'bg-green-600' : 'bg-blue-600', 'bg-red-600');
-                status.innerText = "Hledám start (GEOFENCE 500m)...";
+                status.innerText = "Hledám start (GEOFENCE 50m)...";
 
                 gpsWatchId = navigator.geolocation.watchPosition(async (pos) => {
                   const lat = pos.coords.latitude;
@@ -618,8 +667,8 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                   const distToFinish = Math.round(getDistance(lat, lng, activeRoute.finish_lat, activeRoute.finish_lng) * 1000);
 
                   if (!hasStarted) {
-                    status.innerText = `K startu: ${distToStart}m (limit 500m)`;
-                    if (distToStart <= 500) {
+                    status.innerText = `K startu: ${distToStart}m (limit 50m)`;
+                    if (distToStart <= 50) {
                       hasStarted = true;
                       startTime = Date.now();
                       status.innerText = "🔥 START DETEKOVÁN! Měřím čas...";
@@ -630,22 +679,33 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                         const secs = Math.floor((elapsed % 60000) / 1000).toString().padStart(2, '0');
                         const ms = Math.floor((elapsed % 1000) / 10).toString().padStart(2, '0');
                         timerElem.innerText = `${mins}:${secs}.${ms}`;
-                      }, 30);
+
+                        // Sběr telemetrických bodů v průběhu jízdy
+                        if(isTracking && hasStarted) {
+                          currentRunTelemetry.push({
+                            lat: lat,
+                            lng: lng,
+                            speed: speedKmH,
+                            timeStr: timerElem.innerText,
+                            elapsed: elapsed
+                          });
+                        }
+                      }, 200);
                     }
                   } else {
                     status.innerText = `Do cíle: ${distToFinish}m`;
-                    if (distToFinish <= 500) {
+                    if (distToFinish <= 50) {
                       clearInterval(timerInterval);
                       const finalTime = timerElem.innerText;
                       isTracking = false;
                       navigator.geolocation.clearWatch(gpsWatchId);
 
-                      btn.innerText = "SPOUSTIT AUTO-GPS SLEDOVÁNÍ (500m)";
+                      btn.innerText = isOfficial ? "SPOUSTIT AUTO-GPS SLEDOVÁNÍ (50m)" : "SPOUSTIT AUTO-GPS SLEDOVÁNÍ (50m)";
                       btn.classList.replace('bg-red-600', isOfficial ? 'bg-green-600' : 'bg-blue-600');
                       status.innerText = "Cíl protnut! Čas uložen.";
 
                       alert("🏁 CÍL PROTNUT! Výsledný čas: " + finalTime);
-                      await saveRunToDatabase(activeRoute.id, finalTime);
+                      await saveRunToDatabase(activeRoute.id, finalTime, currentRunTelemetry);
                     }
                   }
                 }, err => {
@@ -656,13 +716,13 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 hasStarted = false;
                 if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
                 if (timerInterval) clearInterval(timerInterval);
-                btn.innerText = "SPOUSTIT AUTO-GPS SLEDOVÁNÍ (500m)";
+                btn.innerText = "SPOUSTIT AUTO-GPS SLEDOVÁNÍ (50m)";
                 btn.classList.replace('bg-red-600', isOfficial ? 'bg-green-600' : 'bg-blue-600');
                 status.innerText = "GPS Vypnuto";
               }
             }
 
-            async function saveRunToDatabase(routeId, timeStr) {
+            async function saveRunToDatabase(routeId, timeStr, telemetryArray) {
               let driverName = localStorage.getItem('apex_user_name') || (currentUser ? currentUser.email : 'Anonym');
               const savedClubTag = localStorage.getItem('apex_user_club_tag');
               if (savedClubTag) {
@@ -677,11 +737,12 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 driver_name: driverName,
                 car_info: car,
                 run_time: timeStr,
+                telemetry: telemetryArray,
                 created_at: new Date()
               }]);
 
               if (error) console.error("Chyba při ukládání do DB:", error);
-              else alert("Výsledek byl úspěšně zapsán do žebříčku!");
+              else alert("Výsledek a telemetrie byly úspěšně zapsány do žebříčku!");
             }
 
             async function loadUserCars() {
@@ -819,7 +880,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             function loadSelectedRoute() { loadRouteById(document.getElementById('route-select').value, 'official'); }
             function loadSelectedCommRoute() { loadRouteById(document.getElementById('comm-route-select').value, 'community'); }
 
-            // --- ŽEBŘÍČKY ---
+            // --- ŽEBŘÍČKY & PŘEHRÁVAČ REPLAYŮ ---
             function populateLeaderboardRouteSelect() {
               const type = document.getElementById('lb-type-select').value;
               const targetRoutes = type === 'official' ? officialRoutes : communityRoutes;
@@ -828,7 +889,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
 
               if(targetRoutes.length === 0) {
                 sel.innerHTML = '<option value="">Žádné trasy v této kategorii</option>';
-                document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-500">Žádné trasy v této kategorii.</td></tr>';
+                document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500">Žádné trasy v této kategorii.</td></tr>';
                 return;
               }
               sel.innerHTML = targetRoutes.map(r => `<option value="${r.id}">${r.name} (${r.distance_km} km)</option>`).join('');
@@ -841,18 +902,20 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               if(!tbody) return;
 
               if(!routeId) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-500">Zvol trasu výše</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500">Zvol trasu výše</td></tr>';
                 return;
               }
 
-              tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-400">Načítám výsledky z databáze...</td></tr>';
+              tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-400">Načítám výsledky z databáze...</td></tr>';
 
               const { data, error } = await db.from('leaderboard').select('*').eq('route_id', routeId).order('run_time', { ascending: true });
 
               if (error || !data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-500">Zatím žádné reálné časy pro tuto trasu. Běž zajet první čas!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500">Zatím žádné reálné časy pro tuto trasu. Běž zajet první čas!</td></tr>';
                 return;
               }
+
+              window.currentLeaderboardRuns = data; // Uložení pro spuštění replaye
 
               tbody.innerHTML = data.map((run, idx) => `
                 <tr class="border-b border-gray-800 hover:bg-gray-800/40">
@@ -860,8 +923,91 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                   <td class="p-3 font-bold text-white">${run.driver_name}</td>
                   <td class="p-3 text-gray-300">${run.car_info || 'Nespecifikováno'}</td>
                   <td class="p-3 font-mono font-bold text-yellow-400 text-right">${run.run_time}</td>
+                  <td class="p-3 text-center">
+                    ${run.telemetry && run.telemetry.length > 0 ? `<button onclick="openReplay(${idx})" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1 rounded-lg font-bold text-xs transition cursor-pointer">▶ Přehrát</button>` : '<span class="text-gray-600 text-[10px]">Bez telemetrie</span>'}
+                  </td>
                 </tr>
               `).join('');
+            }
+
+            function openReplay(runIndex) {
+              const run = window.currentLeaderboardRuns[runIndex];
+              if(!run || !run.telemetry || run.telemetry.length === 0) return alert("Tento záznam neobsahuje telemetrická data pro replay.");
+
+              activeReplayData = run;
+              document.getElementById('replay-card').classList.remove('hidden');
+              document.getElementById('replay-title').innerText = `Replay jízdy: ${run.driver_name} (${run.car_info}) – ${run.run_time}`;
+
+              if(!replayMap) {
+                replayMap = L.map('replay-map').setView([49.208, 17.579], 13);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(replayMap);
+              } else {
+                replayMap.invalidateSize();
+              }
+
+              // Vykreslení trasy v replay okně
+              const routeId = run.route_id;
+              const routeObj = routes.find(r => r.id === routeId);
+              if(routeObj && routeObj.waypoints) {
+                if(replayPolyline) replayMap.removeLayer(replayPolyline);
+                replayPolyline = L.polyline(routeObj.waypoints, { color: '#eab308', weight: 4 }).addTo(replayMap);
+                replayMap.fitBounds(replayPolyline.getBounds());
+              }
+
+              resetReplay();
+              window.scrollTo({ top: document.getElementById('replay-card').offsetTop - 20, behavior: 'smooth' });
+            }
+
+            function closeReplay() {
+              pauseReplay();
+              document.getElementById('replay-card').classList.add('hidden');
+              activeReplayData = null;
+            }
+
+            function resetReplay() {
+              pauseReplay();
+              replayIndex = 0;
+              if(!activeReplayData || !activeReplayData.telemetry.length) return;
+              const pt = activeReplayData.telemetry[0];
+              updateReplayMarker(pt.lat, pt.lng);
+              document.getElementById('replay-time').innerText = pt.timeStr;
+              document.getElementById('replay-speed').innerText = `${pt.speed} km/h`;
+            }
+
+            function updateReplayMarker(lat, lng) {
+              if(replayMarker) {
+                replayMarker.setLatLng([lat, lng]);
+              } else {
+                replayMarker = L.circleMarker([lat, lng], { radius: 10, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 1 }).addTo(replayMap);
+              }
+              replayMap.setView([lat, lng], replayMap.getZoom());
+            }
+
+            function startReplay() {
+              if(!activeReplayData || !activeReplayData.telemetry.length) return;
+              if(replayTimer) clearInterval(replayTimer);
+
+              const mult = parseInt(document.getElementById('replay-speed-mult').value) || 1;
+              const intervalMs = Math.max(30, 200 / mult);
+
+              replayTimer = setInterval(() => {
+                if(replayIndex >= activeReplayData.telemetry.length) {
+                  pauseReplay();
+                  return;
+                }
+                const pt = activeReplayData.telemetry[replayIndex];
+                updateReplayMarker(pt.lat, pt.lng);
+                document.getElementById('replay-time').innerText = pt.timeStr;
+                document.getElementById('replay-speed').innerText = `${pt.speed} km/h`;
+                replayIndex++;
+              }, intervalMs);
+            }
+
+            function pauseReplay() {
+              if(replayTimer) {
+                clearInterval(replayTimer);
+                replayTimer = null;
+              }
             }
 
             // --- KLUBY ---
