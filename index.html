@@ -16,7 +16,7 @@
             font-family: system-ui, -apple-system, sans-serif;
         }
 
-        #map, #comm-map, #all-routes-map, #radar-map {
+        #map, #comm-map, #all-routes-map, #radar-map, #replay-map {
             height: 380px;
             width: 100%;
             border-radius: 1rem;
@@ -35,6 +35,29 @@
             background-color: #111827 !important;
             color: #f3f4f6 !important;
             border: 1px solid #374151;
+        }
+
+        .pin-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 11px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            display: flex;
+            items-center: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .pin-start {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            color: #ffffff;
+        }
+
+        .pin-finish {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            color: #ffffff;
         }
     </style>
 </head>
@@ -79,8 +102,8 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 <button onclick="switchView('view-community-routes')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">👥 Komunitní Trasy & Jízda</button>
                 <button onclick="switchView('view-radar')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">📡 Živý Radar Party</button>
                 <button onclick="switchView('view-all-map')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">🗺️ Všechny trasy na mapě</button>
-                <button onclick="switchView('view-leaderboard')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">🏆 Žebříčky & Sektory</button>
-                <button onclick="switchView('view-replays')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">📊 Grafy & Replaye</button>
+                <button onclick="switchView('view-leaderboard')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">🏆 Žebříčky & Replaye</button>
+                <button onclick="switchView('view-replays')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">📊 Telemetrie Grafy</button>
                 <button onclick="switchView('view-clubs')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">🛡️ Kluby & Týmy</button>
                 <button onclick="switchView('view-garage')" class="w-full text-left px-4 py-3 rounded-xl bg-gray-800/50 hover:bg-red-600/20 hover:text-red-400 font-semibold text-sm transition flex items-center gap-3 cursor-pointer">🚗 Garáž & Kniha Jízd</button>
             </nav>
@@ -105,7 +128,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
     <div id="view-map" class="app-view active space-y-6">
         <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <h2 class="font-bold text-red-500 text-sm tracking-wide">Oficiální trasy & Ghost</h2>
-            <select id="route-select" onchange="loadSelectedRoute()" class="w-full p-3 text-sm bg-gray-800 border border-gray-700 rounded-xl text-white">
+            <select id="route-select" onchange="loadSelectedRoute()" class="w-full p-3 text-sm bg-gray-800 border border-gray-700 rounded-xl text-white font-semibold">
                 <option value="">Načítám oficiální trasy...</option>
             </select>
             <div id="map"></div>
@@ -119,13 +142,11 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                     Hotovo & Uložit trasu
                 </button>
             </div>
-            <p id="route-hint" class="text-xs text-yellow-400 text-center hidden font-bold">Klikni na START a pak na CÍL – trasa se sama natáhne po silnici.</p>
+            <p id="route-hint" class="text-xs text-yellow-400 text-center hidden font-bold">Klikni na START a pak na CÍL – trasa se natáhne po silnici.</p>
         </div>
 
         <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
-            <div class="flex justify-between items-center">
-                <h2 class="font-bold text-red-500 text-sm tracking-wide">Příprava na jízdu (Oficiální)</h2>
-            </div>
+            <h2 class="font-bold text-red-500 text-sm tracking-wide">Příprava na jízdu (Oficiální)</h2>
 
             <div class="space-y-1">
                 <label class="text-xs text-gray-400 font-semibold">Vyber auto z Garáže:</label>
@@ -137,7 +158,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             <div class="bg-gray-800/60 p-3 rounded-xl border border-gray-700 flex items-center justify-between">
                 <div>
                     <div class="text-xs font-bold text-white">👻 Závodit proti vlastnímu Ghostovi</div>
-                    <div class="text-[10px] text-gray-400">Na mapě se ti ukáže tvoje nejlepší jízda</div>
+                    <div class="text-[10px] text-gray-400">Na mapě se ukáže tvoje nejlepší jízda</div>
                 </div>
                 <input type="checkbox" id="ghost-toggle" class="w-5 h-5 accent-red-600 cursor-pointer" checked />
             </div>
@@ -153,16 +174,15 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 </div>
             </div>
 
-            <div id="sector-banner" class="text-center font-mono text-xs font-bold text-yellow-400 min-h-[1.25rem]"></div>
             <div class="text-xs text-gray-400 text-center font-semibold" id="gps-status">GPS Vypnuto</div>
 
-            <button id="btn-gps" onclick="toggleGPS()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl text-lg transition shadow-lg cursor-pointer">
+            <button id="btn-gps" onclick="toggleGPS(true)" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl text-lg transition shadow-lg cursor-pointer">
                 SPUSTIT GPS TRACKING (GEOFENCE)
             </button>
         </div>
     </div>
 
-    <!-- ================= KOMUNITNÍ TRASY ================= -->
+    <!-- ================= KOMUNITNÍ TRASY & JÍZDA ================= -->
     <div id="view-community-routes" class="app-view space-y-6">
         <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="flex justify-between items-center">
@@ -172,7 +192,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 </button>
             </div>
 
-            <select id="comm-route-select" onchange="loadSelectedCommRoute()" class="w-full p-3 text-sm bg-gray-800 border border-gray-700 rounded-xl text-white">
+            <select id="comm-route-select" onchange="loadSelectedCommRoute()" class="w-full p-3 text-sm bg-gray-800 border border-gray-700 rounded-xl text-white font-semibold">
                 <option value="">Načítám komunitní trasy...</option>
             </select>
 
@@ -184,6 +204,35 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 </button>
             </div>
             <p id="comm-route-hint" class="text-xs text-yellow-400 text-center hidden font-bold">Klikni na START a pak na CÍL.</p>
+        </div>
+
+        <!-- PANEL GPS MĚŘENÍ PRO KOMUNITNÍ TRASY -->
+        <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
+            <h2 class="font-bold text-blue-400 text-sm tracking-wide">Příprava na jízdu (Komunitní)</h2>
+
+            <div class="space-y-1">
+                <label class="text-xs text-gray-400 font-semibold">Vyber auto z Garáže:</label>
+                <select id="comm-car-select" class="w-full p-3 text-sm bg-gray-800 border border-gray-700 rounded-xl text-white font-bold">
+                    <option value="">Načítám tvoje auta...</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 items-center bg-gray-950 p-4 rounded-xl border border-gray-800 text-center">
+                <div>
+                    <div class="text-xs text-gray-400">ČAS</div>
+                    <div class="text-3xl font-mono font-black text-white tracking-wider" id="comm-timer">00:00.00</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-400">RYCHLOST</div>
+                    <div class="text-3xl font-mono font-black text-blue-400 tracking-wider"><span id="comm-speed">0</span> <span class="text-xs text-gray-400">km/h</span></div>
+                </div>
+            </div>
+
+            <div class="text-xs text-gray-400 text-center font-semibold" id="comm-gps-status">GPS Vypnuto</div>
+
+            <button id="btn-comm-gps" onclick="toggleGPS(false)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-lg transition shadow-lg cursor-pointer">
+                SPUSTIT GPS TRACKING (KOMUNITNÍ)
+            </button>
         </div>
     </div>
 
@@ -203,34 +252,68 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
     <div id="view-all-map" class="app-view space-y-6">
         <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <h2 class="font-bold text-red-500 text-sm tracking-wide">Přehled všech tras na mapě</h2>
+            <div class="flex gap-4 text-xs font-semibold pb-2">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> Oficiální trasy</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> Komunitní trasy</span>
+            </div>
             <div id="all-routes-map"></div>
         </div>
     </div>
 
-    <!-- ================= ŽEBŘÍČKY ================= -->
+    <!-- ================= ŽEBŘÍČKY & REPLAY ================= -->
     <div id="view-leaderboard" class="app-view space-y-6">
         <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
-            <h2 class="font-bold text-red-500 text-sm tracking-wide">Žebříček časů & Sektory</h2>
-            <select id="lb-route-select" onchange="loadLeaderboardForView()" class="w-full p-3 text-xs bg-gray-800 border border-gray-700 rounded-xl text-white">
-                <option value="">Vyber trasu...</option>
-            </select>
+            <h2 class="font-bold text-red-500 text-sm tracking-wide">Žebříček časů & Replaye Jízd</h2>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase">Typ tras:</label>
+                    <select id="lb-type-select" onchange="populateLeaderboardRouteSelect()" class="w-full p-2.5 text-xs bg-gray-800 border border-gray-700 rounded-xl text-white font-semibold">
+                        <option value="official">🏁 Oficiální Trasy</option>
+                        <option value="community">👥 Komunitní Trasy</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase">Vyber trasu:</label>
+                    <select id="lb-route-select" onchange="loadLeaderboardForView()" class="w-full p-2.5 text-xs bg-gray-800 border border-gray-700 rounded-xl text-white font-semibold">
+                        <option value="">Načítám trasy...</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs text-gray-300">
                     <thead class="bg-gray-800/80 text-gray-400">
-                        <tr><th class="p-3">#</th><th class="p-3">Jezdec / Klub</th><th class="p-3">Auto</th><th class="p-3 text-right">Čas</th></tr>
+                        <tr><th class="p-3">#</th><th class="p-3">Jezdec</th><th class="p-3">Auto</th><th class="p-3">Čas</th><th class="p-3 text-right">Akce</th></tr>
                     </thead>
                     <tbody id="leaderboard-body">
-                        <tr><td colspan="4" class="p-6 text-center text-gray-500">Zvol trasu výše</td></tr>
+                        <tr><td colspan="5" class="p-6 text-center text-gray-500">Zvol trasu výše</td></tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- INTERAKTIVNÍ REPLAY PŘEHRÁVAČ -->
+            <div id="replay-player-section" class="hidden border-t border-gray-800 pt-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-yellow-400 text-xs">▶ REPLAY JÍZDY: <span id="replay-driver-name" class="text-white">--</span></h3>
+                    <button onclick="stopReplay()" class="text-xs text-gray-400 hover:text-white">✕ Zavřít Replay</button>
+                </div>
+
+                <div id="replay-map"></div>
+
+                <div class="flex justify-between items-center bg-gray-950 p-3 rounded-xl border border-gray-800 font-mono text-xs">
+                    <div>Čas: <span id="replay-time" class="text-white font-bold">00:00.00</span></div>
+                    <div>Rychlost: <span id="replay-speed" class="text-red-500 font-bold">0 km/h</span></div>
+                    <button onclick="playReplayAnimation()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-sans font-bold">Spustit Replay</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ================= GRAFY & REPLAYE ================= -->
+    <!-- ================= GRAFY & TELEMETRIE ================= -->
     <div id="view-replays" class="app-view space-y-6">
         <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
-            <h2 class="font-bold text-red-500 text-sm tracking-wide">Telemetrické Grafy Rychlosti & Replay</h2>
+            <h2 class="font-bold text-red-500 text-sm tracking-wide">Telemetrické Grafy Rychlosti</h2>
             <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 space-y-2">
                 <div class="w-full h-56"><canvas id="speedChart"></canvas></div>
             </div>
@@ -287,13 +370,13 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
 
     <!-- JAVASCRIPT LOGIKA -->
     <script>
-            let map, commMap, allRoutesMap, radarMap;
-            let startMarker, finishMarker, routePolyline, commRoutePolyline, userMarker = null;
+            let map, commMap, allRoutesMap, radarMap, replayMap;
+            let startMarker, finishMarker, routePolyline, commStartMarker, commFinishMarker, commRoutePolyline, userMarker = null;
             let routes = [], officialRoutes = [], communityRoutes = [];
             let currentRoute = null, currentCommRoute = null;
             let userCars = [], clubsList = [];
             let gpsWatchId = null, startTime = null, timerInterval = null;
-            let isTracking = false, hasStarted = false;
+            let isTracking = false, hasStarted = false, isOfficialTracking = true;
             let currentUser = null;
             let speedChartInstance = null;
             let radarWatchId = null, isRadarActive = false, radarMarkers = {}, radarInterval = null;
@@ -305,6 +388,9 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             let tempPolyline = null;
             let routedWaypoints = [];
             let allRoutesPolylines = [];
+
+            // Replay proměnné
+            let replayPolyline = null, replayMarker = null, replayAnimInterval = null, currentReplayRoute = null;
 
             function toggleAuthModal() {
               document.getElementById('auth-modal').classList.toggle('hidden');
@@ -442,14 +528,22 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               if(savedName) document.getElementById('reg-name').value = savedName;
             });
 
+            // PĚKNÉ STYLOVÁNÍ ZNAČEK START A CÍL
+            function createBadgeIcon(text, isStart) {
+              const bgClass = isStart ? 'pin-start' : 'pin-finish';
+              return L.divIcon({
+                className: 'custom-pin-container',
+                html: `<div class="pin-badge ${bgClass}">${isStart ? '🏁 START' : '🏁 CÍL'}</div>`,
+                iconSize: [75, 28],
+                iconAnchor: [37, 14]
+              });
+            }
+
             function loadRouteById(id, type) {
               const targetRoute = routes.find(r => r.id === id);
               if(!targetRoute) return;
               const p1 = [targetRoute.start_lat, targetRoute.start_lng];
               const p2 = [targetRoute.finish_lat, targetRoute.finish_lng];
-
-              const startIcon = L.divIcon({ className: 'pin-start', html: '<div style="background:#22c55e;color:#fff;padding:4px 8px;border-radius:6px;font-weight:bold;font-size:11px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);">🏁 START</div>', iconSize:[65,24], iconAnchor:[32,12] });
-              const finishIcon = L.divIcon({ className: 'pin-finish', html: '<div style="background:#ef4444;color:#fff;padding:4px 8px;border-radius:6px;font-weight:bold;font-size:11px;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.5);">🏁 CÍL</div>', iconSize:[55,24], iconAnchor:[27,12] });
 
               if(type === 'official') {
                 currentRoute = targetRoute;
@@ -457,13 +551,18 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 if(finishMarker) map.removeLayer(finishMarker);
                 if(routePolyline) map.removeLayer(routePolyline);
 
-                startMarker = L.marker(p1, { icon: startIcon }).addTo(map);
-                finishMarker = L.marker(p2, { icon: finishIcon }).addTo(map);
+                startMarker = L.marker(p1, { icon: createBadgeIcon('START', true) }).addTo(map);
+                finishMarker = L.marker(p2, { icon: createBadgeIcon('CÍL', false) }).addTo(map);
                 routePolyline = L.polyline(targetRoute.waypoints || [p1, p2], {color: '#ef4444', weight: 5}).addTo(map);
                 map.fitBounds(routePolyline.getBounds());
               } else {
                 currentCommRoute = targetRoute;
+                if(commStartMarker) commMap.removeLayer(commStartMarker);
+                if(commFinishMarker) commMap.removeLayer(commFinishMarker);
                 if(commRoutePolyline) commMap.removeLayer(commRoutePolyline);
+
+                commStartMarker = L.marker(p1, { icon: createBadgeIcon('START', true) }).addTo(commMap);
+                commFinishMarker = L.marker(p2, { icon: createBadgeIcon('CÍL', false) }).addTo(commMap);
                 commRoutePolyline = L.polyline(targetRoute.waypoints || [p1, p2], {color: '#3b82f6', weight: 5}).addTo(commMap);
                 commMap.fitBounds(commRoutePolyline.getBounds());
               }
@@ -484,9 +583,14 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               });
             }
 
-            function toggleGPS() {
-              const btn = document.getElementById('btn-gps');
-              const status = document.getElementById('gps-status');
+            function toggleGPS(isOfficial) {
+              isOfficialTracking = isOfficial;
+              const btn = isOfficial ? document.getElementById('btn-gps') : document.getElementById('btn-comm-gps');
+              const status = isOfficial ? document.getElementById('gps-status') : document.getElementById('comm-gps-status');
+              const activeRoute = isOfficial ? currentRoute : currentCommRoute;
+              const speedElem = isOfficial ? document.getElementById('speed') : document.getElementById('comm-speed');
+              const timerElem = isOfficial ? document.getElementById('timer') : document.getElementById('comm-timer');
+              const targetMap = isOfficial ? map : commMap;
 
               if (!isTracking) {
                 if (!navigator.geolocation) {
@@ -495,7 +599,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
 
                 isTracking = true;
                 btn.innerText = "ZASTAVIT GPS TRACKING";
-                btn.classList.replace('bg-green-600', 'bg-red-600');
+                btn.classList.replace(isOfficial ? 'bg-green-600' : 'bg-blue-600', 'bg-red-600');
                 status.innerText = "Vyžádání přístupu k GPS poloze...";
 
                 gpsWatchId = navigator.geolocation.watchPosition(
@@ -504,14 +608,14 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                     const lng = pos.coords.longitude;
                     const speedKmH = Math.round((pos.coords.speed || 0) * 3.6);
 
-                    document.getElementById('speed').innerText = speedKmH;
+                    speedElem.innerText = speedKmH;
 
                     if (userMarker) userMarker.setLatLng([lat, lng]);
-                    else userMarker = L.circleMarker([lat, lng], { radius: 9, color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.9 }).addTo(map);
+                    else userMarker = L.circleMarker([lat, lng], { radius: 9, color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.9 }).addTo(targetMap);
 
-                    if (currentRoute) {
-                      const distToStart = Math.round(getDistance(lat, lng, currentRoute.start_lat, currentRoute.start_lng) * 1000);
-                      const distToFinish = Math.round(getDistance(lat, lng, currentRoute.finish_lat, currentRoute.finish_lng) * 1000);
+                    if (activeRoute) {
+                      const distToStart = Math.round(getDistance(lat, lng, activeRoute.start_lat, activeRoute.start_lng) * 1000);
+                      const distToFinish = Math.round(getDistance(lat, lng, activeRoute.finish_lat, activeRoute.finish_lng) * 1000);
 
                       if (!hasStarted) {
                         status.innerText = `GPS Aktivní | Vzdálenost ke STARTU: ${distToStart}m`;
@@ -524,7 +628,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                             const mins = Math.floor(elapsed / 60000).toString().padStart(2, '0');
                             const secs = Math.floor((elapsed % 60000) / 1000).toString().padStart(2, '0');
                             const ms = Math.floor((elapsed % 1000) / 10).toString().padStart(2, '0');
-                            document.getElementById('timer').innerText = `${mins}:${secs}.${ms}`;
+                            timerElem.innerText = `${mins}:${secs}.${ms}`;
                           }, 30);
                         }
                       } else {
@@ -532,15 +636,15 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                         if (distToFinish <= 25) {
                           clearInterval(timerInterval);
                           hasStarted = false;
-                          alert("🏁 PROTLAČIL JSI CÍL! Tvůj čas: " + document.getElementById('timer').innerText);
-                          toggleGPS();
+                          alert("🏁 PROTLAČIL JSI CÍL! Tvůj čas: " + timerElem.innerText);
+                          toggleGPS(isOfficial);
                         }
                       }
                     }
                   },
                   (err) => {
-                    alert("Chyba GPS polohy: " + err.message + ". Povol prosím přístup k polohovým službám v prohlížeči.");
-                    toggleGPS();
+                    alert("Chyba GPS polohy: " + err.message);
+                    toggleGPS(isOfficial);
                   },
                   { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
                 );
@@ -549,8 +653,8 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 hasStarted = false;
                 if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
                 if (timerInterval) clearInterval(timerInterval);
-                btn.innerText = "SPUSTIT GPS TRACKING (GEOFENCE)";
-                btn.classList.replace('bg-red-600', 'bg-green-600');
+                btn.innerText = isOfficial ? "SPUSTIT GPS TRACKING (GEOFENCE)" : "SPUSTIT GPS TRACKING (KOMUNITNÍ)";
+                btn.classList.replace('bg-red-600', isOfficial ? 'bg-green-600' : 'bg-blue-600');
                 status.innerText = "GPS Vypnuto";
               }
             }
@@ -586,9 +690,10 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
 
             function populateCarSelects() {
               const sel = document.getElementById('active-car-select');
-              if(sel) {
-                sel.innerHTML = userCars.length ? userCars.map((c, i) => `<option value="${i}">${c.brand_model} (${c.engine} - ${c.horsepower} HP)</option>`).join('') : '<option value="">Žádné auto v garáži</option>';
-              }
+              const commSel = document.getElementById('comm-car-select');
+              const optionsHTML = userCars.length ? userCars.map((c, i) => `<option value="${i}">${c.brand_model} (${c.engine} - ${c.horsepower} HP)</option>`).join('') : '<option value="">Žádné auto v garáži</option>';
+              if(sel) sel.innerHTML = optionsHTML;
+              if(commSel) commSel.innerHTML = optionsHTML;
             }
 
             async function addCarToGarage() {
@@ -694,19 +799,117 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               }
               if(communityRoutes.length > 0) loadRouteById(communityRoutes[0].id, 'community');
 
+              populateLeaderboardRouteSelect();
               renderAllRoutesOnMap();
             }
 
             function loadSelectedRoute() { loadRouteById(document.getElementById('route-select').value, 'official'); }
             function loadSelectedCommRoute() { loadRouteById(document.getElementById('comm-route-select').value, 'community'); }
 
+            // --- ŽEBŘÍČKY & REPLAY ---
+            function populateLeaderboardRouteSelect() {
+              const type = document.getElementById('lb-type-select').value;
+              const targetRoutes = type === 'official' ? officialRoutes : communityRoutes;
+              const sel = document.getElementById('lb-route-select');
+              if(!sel) return;
+
+              if(targetRoutes.length === 0) {
+                sel.innerHTML = '<option value="">Žádné trasy v této kategorii</option>';
+                document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500">Žádné trasy k zobrazení.</td></tr>';
+                return;
+              }
+
+              sel.innerHTML = targetRoutes.map(r => `<option value="${r.id}">${r.name} (${r.distance_km} km)</option>`).join('');
+              loadLeaderboardForView();
+            }
+
+            function loadLeaderboardForView() {
+              const routeId = document.getElementById('lb-route-select').value;
+              const targetRoute = routes.find(r => r.id === routeId);
+              const tbody = document.getElementById('leaderboard-body');
+              if(!tbody) return;
+
+              if(!targetRoute) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500">Zvol trasu</td></tr>';
+                return;
+              }
+
+              // Ukázková žebříčková data
+              const sampleRuns = [
+                { rank: 1, driver: 'Ondřej (ADMIN)', club: 'TDI', car: 'Fabia RS (110 kW)', time: '01:42.15', rawRoute: targetRoute },
+                { rank: 2, driver: 'Karel GT', club: 'RACE', car: 'Golf 5 GTI', time: '01:45.80', rawRoute: targetRoute },
+                { rank: 3, driver: 'Honza99', club: 'TDI', car: 'Octavia 1.9 TDI', time: '01:49.02', rawRoute: targetRoute }
+              ];
+
+              tbody.innerHTML = sampleRuns.map(run => `
+                <tr class="border-b border-gray-800 hover:bg-gray-800/40">
+                  <td class="p-3 font-bold text-red-500">#${run.rank}</td>
+                  <td class="p-3 font-bold text-white">${run.driver} <span class="text-[10px] text-gray-400">[${run.club}]</span></td>
+                  <td class="p-3 text-gray-300">${run.car}</td>
+                  <td class="p-3 font-mono font-bold text-yellow-400">${run.time}</td>
+                  <td class="p-3 text-right">
+                    <button onclick='openReplayPlayer("${run.driver}", "${run.time}")' class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold transition">▶ Replay</button>
+                  </td>
+                </tr>
+              `).join('');
+            }
+
+            function openReplayPlayer(driverName, runTime) {
+              document.getElementById('replay-player-section').classList.remove('hidden');
+              document.getElementById('replay-driver-name').innerText = driverName;
+              document.getElementById('replay-time').innerText = runTime;
+
+              const routeId = document.getElementById('lb-route-select').value;
+              currentReplayRoute = routes.find(r => r.id === routeId);
+
+              if (!replayMap) {
+                replayMap = L.map('replay-map').setView([49.208, 17.579], 13);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(replayMap);
+              }
+
+              setTimeout(() => replayMap.invalidateSize(), 100);
+
+              if (currentReplayRoute && currentReplayRoute.waypoints) {
+                if(replayPolyline) replayMap.removeLayer(replayPolyline);
+                replayPolyline = L.polyline(currentReplayRoute.waypoints, { color: '#eab308', weight: 5 }).addTo(replayMap);
+                replayMap.fitBounds(replayPolyline.getBounds());
+              }
+            }
+
+            function playReplayAnimation() {
+              if (!currentReplayRoute || !currentReplayRoute.waypoints || currentReplayRoute.waypoints.length < 2) {
+                return alert("Pro tuto trasu nejsou dostupná podrobná data Replaye.");
+              }
+
+              const points = currentReplayRoute.waypoints;
+              let step = 0;
+
+              if(replayMarker) replayMap.removeLayer(replayMarker);
+              replayMarker = L.circleMarker(points[0], { radius: 9, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 1 }).addTo(replayMap);
+
+              if(replayAnimInterval) clearInterval(replayAnimInterval);
+
+              replayAnimInterval = setInterval(() => {
+                step++;
+                if (step >= points.length) {
+                  clearInterval(replayAnimInterval);
+                  alert("Replay dokončen!");
+                  return;
+                }
+                replayMarker.setLatLng(points[step]);
+                document.getElementById('replay-speed').innerText = (Math.floor(Math.random() * 40) + 70) + ' km/h';
+              }, 150);
+            }
+
+            function stopReplay() {
+              document.getElementById('replay-player-section').classList.add('hidden');
+              if (replayAnimInterval) clearInterval(replayAnimInterval);
+            }
+
             // --- KLUBY ---
             async function loadClubs() {
               const { data, error } = await db.from('clubs').select('*');
-              if(error) {
-                console.error("Chyba načítání klubů:", error);
-                return;
-              }
+              if(error) return;
               clubsList = data || [];
               const sel = document.getElementById('club-select');
               if(sel) {
@@ -717,17 +920,11 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             async function createNewClub() {
               const name = document.getElementById('new-club-name').value.trim();
               const tag = document.getElementById('new-club-tag').value.trim().toUpperCase();
-              if(!name || !tag) return alert("Vyplň název i zkratku klubu!");
+              if(!name || !tag) return alert("Vyplň název i zkratku!");
 
               const { error } = await db.from('clubs').insert([{ name, tag }]);
-              if(error) {
-                alert("Chyba při vytváření klubu: " + error.message);
-              } else {
-                alert("Klub úspěšně vytvořen!");
-                document.getElementById('new-club-name').value = '';
-                document.getElementById('new-club-tag').value = '';
-                loadClubs();
-              }
+              if(error) alert("Chyba při vytváření klubu: " + error.message);
+              else { alert("Klub úspěšně vytvořen!"); loadClubs(); }
             }
 
             function joinSelectedClub() {
@@ -735,7 +932,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               alert("Klub uložen!");
             }
 
-            // --- ŽIVÝ RADAR ---
+            // --- RADAR ---
             async function fetchRadarUsers() {
               const { data } = await db.from('live_radar').select('*');
               if(!data) return;
@@ -746,7 +943,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 if(radarMarkers[user.id]) {
                   radarMarkers[user.id].setLatLng(latLng);
                 } else {
-                  radarMarkers[user.id] = L.circleMarker(latLng, { radius: 8, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.8 }).addTo(radarMap).bindPopup(`<b>${user.user_name}</b> [${user.club_tag || ''}]`);
+                  radarMarkers[user.id] = L.circleMarker(latLng, { radius: 8, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.8 }).addTo(radarMap).bindPopup(`<b>${user.user_name}</b>`);
                 }
               });
               Object.keys(radarMarkers).forEach(id => {
@@ -788,7 +985,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               }
             }
 
-            // --- GRAFY A TELEMETRIE ---
+            // --- GRAFY ---
             function initChart() {
               const ctx = document.getElementById('speedChart');
               if(!ctx) return;
@@ -816,11 +1013,6 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               const dLon = (lon2-lon1) * Math.PI / 180;
               const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
               return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            }
-
-            function populateLeaderboardRouteSelect() {
-              const sel = document.getElementById('lb-route-select');
-              if(sel) sel.innerHTML = officialRoutes.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
             }
     </script>
 </body>
