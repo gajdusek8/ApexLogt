@@ -45,7 +45,7 @@
             border: 2px solid #ffffff;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
             display: flex;
-            items-center: center;
+            align-items: center;
             gap: 4px;
             white-space: nowrap;
         }
@@ -81,7 +81,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             </button>
             <div>
                 <h1 class="text-xl font-black italic text-red-500 tracking-wider">APEX<span class="text-white">LOG</span></h1>
-                <p class="text-[10px] text-gray-400">Ghost, Geofence & Live Radar</p>
+                <p class="text-[10px] text-gray-400">Klikací měření & Live Radar</p>
             </div>
         </div>
 
@@ -155,14 +155,6 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 </select>
             </div>
 
-            <div class="bg-gray-800/60 p-3 rounded-xl border border-gray-700 flex items-center justify-between">
-                <div>
-                    <div class="text-xs font-bold text-white">👻 Závodit proti vlastnímu Ghostovi</div>
-                    <div class="text-[10px] text-gray-400">Na mapě se ukáže tvoje nejlepší jízda</div>
-                </div>
-                <input type="checkbox" id="ghost-toggle" class="w-5 h-5 accent-red-600 cursor-pointer" checked />
-            </div>
-
             <div class="grid grid-cols-2 gap-4 items-center bg-gray-950 p-4 rounded-xl border border-gray-800 text-center">
                 <div>
                     <div class="text-xs text-gray-400">ČAS</div>
@@ -174,10 +166,10 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 </div>
             </div>
 
-            <div class="text-xs text-gray-400 text-center font-semibold" id="gps-status">GPS Vypnuto</div>
+            <div class="text-xs text-gray-400 text-center font-semibold" id="gps-status">Připraveno k měření</div>
 
-            <button id="btn-gps" onclick="toggleGPS(true)" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl text-lg transition shadow-lg cursor-pointer">
-                SPUSTIT GPS TRACKING (GEOFENCE)
+            <button id="btn-gps" onclick="checkCurrentLocationGPS(true)" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl text-lg transition shadow-lg cursor-pointer">
+                📍 OVĚŘIT POLOHU / START / CÍL
             </button>
         </div>
     </div>
@@ -228,10 +220,10 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 </div>
             </div>
 
-            <div class="text-xs text-gray-400 text-center font-semibold" id="comm-gps-status">GPS Vypnuto</div>
+            <div class="text-xs text-gray-400 text-center font-semibold" id="comm-gps-status">Připraveno k měření</div>
 
-            <button id="btn-comm-gps" onclick="toggleGPS(false)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-lg transition shadow-lg cursor-pointer">
-                SPUSTIT GPS TRACKING (KOMUNITNÍ)
+            <button id="btn-comm-gps" onclick="checkCurrentLocationGPS(false)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-lg transition shadow-lg cursor-pointer">
+                📍 OVĚŘIT POLOHU / START / CÍL
             </button>
         </div>
     </div>
@@ -375,8 +367,8 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             let routes = [], officialRoutes = [], communityRoutes = [];
             let currentRoute = null, currentCommRoute = null;
             let userCars = [], clubsList = [];
-            let gpsWatchId = null, startTime = null, timerInterval = null;
-            let isTracking = false, hasStarted = false, isOfficialTracking = true;
+            let startTime = null, timerInterval = null;
+            let hasStarted = false;
             let currentUser = null;
             let speedChartInstance = null;
             let radarWatchId = null, isRadarActive = false, radarMarkers = {}, radarInterval = null;
@@ -528,7 +520,6 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               if(savedName) document.getElementById('reg-name').value = savedName;
             });
 
-            // PĚKNÉ STYLOVÁNÍ ZNAČEK START A CÍL
             function createBadgeIcon(text, isStart) {
               const bgClass = isStart ? 'pin-start' : 'pin-finish';
               return L.divIcon({
@@ -583,80 +574,75 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               });
             }
 
-            function toggleGPS(isOfficial) {
-              isOfficialTracking = isOfficial;
-              const btn = isOfficial ? document.getElementById('btn-gps') : document.getElementById('btn-comm-gps');
-              const status = isOfficial ? document.getElementById('gps-status') : document.getElementById('comm-gps-status');
+            // JEDNORÁZOVÉ OVĚŘENÍ POLOHY NA KLIKNUTÍ (ŽÁDNÉ TRVALÉ SLEDOVÁNÍ NA POZADÍ)
+            function checkCurrentLocationGPS(isOfficial) {
               const activeRoute = isOfficial ? currentRoute : currentCommRoute;
-              const speedElem = isOfficial ? document.getElementById('speed') : document.getElementById('comm-speed');
+              const statusElem = isOfficial ? document.getElementById('gps-status') : document.getElementById('comm-gps-status');
               const timerElem = isOfficial ? document.getElementById('timer') : document.getElementById('comm-timer');
+              const speedElem = isOfficial ? document.getElementById('speed') : document.getElementById('comm-speed');
               const targetMap = isOfficial ? map : commMap;
 
-              if (!isTracking) {
-                if (!navigator.geolocation) {
-                  return alert("Tvé zařízení nepodporuje GPS Geolocation.");
-                }
-
-                isTracking = true;
-                btn.innerText = "ZASTAVIT GPS TRACKING";
-                btn.classList.replace(isOfficial ? 'bg-green-600' : 'bg-blue-600', 'bg-red-600');
-                status.innerText = "Vyžádání přístupu k GPS poloze...";
-
-                gpsWatchId = navigator.geolocation.watchPosition(
-                  (pos) => {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-                    const speedKmH = Math.round((pos.coords.speed || 0) * 3.6);
-
-                    speedElem.innerText = speedKmH;
-
-                    if (userMarker) userMarker.setLatLng([lat, lng]);
-                    else userMarker = L.circleMarker([lat, lng], { radius: 9, color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.9 }).addTo(targetMap);
-
-                    if (activeRoute) {
-                      const distToStart = Math.round(getDistance(lat, lng, activeRoute.start_lat, activeRoute.start_lng) * 1000);
-                      const distToFinish = Math.round(getDistance(lat, lng, activeRoute.finish_lat, activeRoute.finish_lng) * 1000);
-
-                      if (!hasStarted) {
-                        status.innerText = `GPS Aktivní | Vzdálenost ke STARTU: ${distToStart}m`;
-                        if (distToStart <= 25) {
-                          hasStarted = true;
-                          startTime = Date.now();
-                          status.innerText = "🔥 ODSTARTOVÁNO! JÍZDA PROBÍHÁ!";
-                          timerInterval = setInterval(() => {
-                            const elapsed = Date.now() - startTime;
-                            const mins = Math.floor(elapsed / 60000).toString().padStart(2, '0');
-                            const secs = Math.floor((elapsed % 60000) / 1000).toString().padStart(2, '0');
-                            const ms = Math.floor((elapsed % 1000) / 10).toString().padStart(2, '0');
-                            timerElem.innerText = `${mins}:${secs}.${ms}`;
-                          }, 30);
-                        }
-                      } else {
-                        status.innerText = `JÍZDA AKCE | Vzdálenost do CÍLE: ${distToFinish}m`;
-                        if (distToFinish <= 25) {
-                          clearInterval(timerInterval);
-                          hasStarted = false;
-                          alert("🏁 PROTLAČIL JSI CÍL! Tvůj čas: " + timerElem.innerText);
-                          toggleGPS(isOfficial);
-                        }
-                      }
-                    }
-                  },
-                  (err) => {
-                    alert("Chyba GPS polohy: " + err.message);
-                    toggleGPS(isOfficial);
-                  },
-                  { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-                );
-              } else {
-                isTracking = false;
-                hasStarted = false;
-                if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
-                if (timerInterval) clearInterval(timerInterval);
-                btn.innerText = isOfficial ? "SPUSTIT GPS TRACKING (GEOFENCE)" : "SPUSTIT GPS TRACKING (KOMUNITNÍ)";
-                btn.classList.replace('bg-red-600', isOfficial ? 'bg-green-600' : 'bg-blue-600');
-                status.innerText = "GPS Vypnuto";
+              if (!activeRoute) {
+                return alert("Nejprve vyber aktivní trasu ze seznamu!");
               }
+
+              if (!navigator.geolocation) {
+                return alert("Tvé zařízení nepodporuje geolokaci.");
+              }
+
+              statusElem.innerText = "Zjišťuji aktuální polohu...";
+
+              navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                  const lat = pos.coords.latitude;
+                  const lng = pos.coords.longitude;
+                  const speedKmH = Math.round((pos.coords.speed || 0) * 3.6);
+                  speedElem.innerText = speedKmH;
+
+                  if (userMarker) userMarker.setLatLng([lat, lng]);
+                  else userMarker = L.circleMarker([lat, lng], { radius: 9, color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.9 }).addTo(targetMap);
+
+                  const distToStart = Math.round(getDistance(lat, lng, activeRoute.start_lat, activeRoute.start_lng) * 1000);
+                  const distToFinish = Math.round(getDistance(lat, lng, activeRoute.finish_lat, activeRoute.finish_lng) * 1000);
+
+                  if (!hasStarted) {
+                    statusElem.innerText = `Vzdálenost ke startu: ${distToStart}m`;
+                    if (distToStart <= 30) {
+                      hasStarted = true;
+                      startTime = Date.now();
+                      statusElem.innerText = "🔥 ODSTARTOVÁNO! Jízda probíhá...";
+                      alert("Start detekován! Měření času spuštěno.");
+
+                      if(timerInterval) clearInterval(timerInterval);
+                      timerInterval = setInterval(() => {
+                        const elapsed = Date.now() - startTime;
+                        const mins = Math.floor(elapsed / 60000).toString().padStart(2, '0');
+                        const secs = Math.floor((elapsed % 60000) / 1000).toString().padStart(2, '0');
+                        const ms = Math.floor((elapsed % 1000) / 10).toString().padStart(2, '0');
+                        timerElem.innerText = `${mins}:${secs}.${ms}`;
+                      }, 30);
+                    } else {
+                      alert(`Jsi příliš daleko od startu (${distToStart}m). Přibliž se na méně než 30 metrů a klikni znovu.`);
+                    }
+                  } else {
+                    statusElem.innerText = `Vzdálenost do cíle: ${distToFinish}m`;
+                    if (distToFinish <= 30) {
+                      clearInterval(timerInterval);
+                      hasStarted = false;
+                      const finalTime = timerElem.innerText;
+                      alert("🏁 CÍL PROTNUT! Výsledný čas: " + finalTime);
+                      statusElem.innerText = "Jízda úspěšně dokončena!";
+                    } else {
+                      alert(`Do cíle zbývá ještě ${distToFinish} metrů. Jeď dál a po dojezdu klikni znovu!`);
+                    }
+                  }
+                },
+                (err) => {
+                  alert("Nepodařilo se získat polohu: " + err.message + ". Zkontroluj povolení polohy v prohlížeči.");
+                  statusElem.innerText = "Chyba polohy";
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+              );
             }
 
             async function loadUserCars() {
@@ -834,7 +820,6 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 return;
               }
 
-              // Ukázková žebříčková data
               const sampleRuns = [
                 { rank: 1, driver: 'Ondřej (ADMIN)', club: 'TDI', car: 'Fabia RS (110 kW)', time: '01:42.15', rawRoute: targetRoute },
                 { rank: 2, driver: 'Karel GT', club: 'RACE', car: 'Golf 5 GTI', time: '01:45.80', rawRoute: targetRoute },
