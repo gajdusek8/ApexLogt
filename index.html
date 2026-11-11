@@ -81,7 +81,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             </button>
             <div>
                 <h1 class="text-xl font-black italic text-red-500 tracking-wider">APEX<span class="text-white">LOG</span></h1>
-                <p class="text-[10px] text-gray-400">Real Database Leaderboards</p>
+                <p class="text-[10px] text-gray-400">Multi-Waypoint Routing</p>
             </div>
         </div>
 
@@ -134,15 +134,20 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             <div id="map"></div>
 
             <!-- ADMIN OVLÁDÁNÍ -->
-            <div id="admin-route-controls" class="hidden flex gap-2">
-                <button id="btn-add-route" onclick="startAddingRoute(true)" class="w-full bg-red-600/80 hover:bg-red-600 border border-red-500 text-xs py-3 rounded-xl text-white transition font-bold cursor-pointer">
-                    + Vytvořit Oficiální Trasu (Admin)
-                </button>
-                <button id="btn-finish-route" onclick="finishAddingRoute()" class="hidden bg-green-600 hover:bg-green-700 text-white text-xs px-4 py-3 rounded-xl font-bold transition cursor-pointer">
-                    Hotovo & Uložit trasu
+            <div id="admin-route-controls" class="hidden flex flex-col gap-2">
+                <div class="flex gap-2">
+                    <button id="btn-add-route" onclick="startAddingRoute(true)" class="w-full bg-red-600/80 hover:bg-red-600 border border-red-500 text-xs py-3 rounded-xl text-white transition font-bold cursor-pointer">
+                        + Vytvořit Oficiální Trasu (Admin)
+                    </button>
+                    <button id="btn-finish-route" onclick="finishAddingRoute()" class="hidden bg-green-600 hover:bg-green-700 text-white text-xs px-4 py-3 rounded-xl font-bold transition cursor-pointer">
+                        Hotovo & Uložit
+                    </button>
+                </div>
+                <button id="btn-undo-point" onclick="undoLastPoint()" class="hidden bg-gray-800 hover:bg-gray-700 text-yellow-400 border border-gray-700 text-xs py-2 rounded-xl transition font-bold cursor-pointer">
+                    ↩ Zpět (Smazat poslední bod)
                 </button>
             </div>
-            <p id="route-hint" class="text-xs text-yellow-400 text-center hidden font-bold">Klikni na START a pak na CÍL – trasa se natáhne po silnici.</p>
+            <p id="route-hint" class="text-xs text-yellow-400 text-center hidden font-bold">Klikni na START, potom na průchozí body a nakonec na CÍL.</p>
         </div>
 
         <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
@@ -190,12 +195,15 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
 
             <div id="comm-map"></div>
 
-            <div id="comm-admin-controls" class="hidden flex gap-2">
+            <div id="comm-admin-controls" class="hidden flex flex-col gap-2">
                 <button id="btn-comm-finish" onclick="finishAddingRoute()" class="w-full bg-green-600 hover:bg-green-700 text-white text-xs px-4 py-3 rounded-xl font-bold transition cursor-pointer">
                     Hotovo & Uložit komunitní trasu
                 </button>
+                <button id="btn-comm-undo" onclick="undoLastPoint()" class="bg-gray-800 hover:bg-gray-700 text-yellow-400 border border-gray-700 text-xs py-2 rounded-xl transition font-bold cursor-pointer">
+                    ↩ Zpět (Smazat poslední bod)
+                </button>
             </div>
-            <p id="comm-route-hint" class="text-xs text-yellow-400 text-center hidden font-bold">Klikni na START a pak na CÍL.</p>
+            <p id="comm-route-hint" class="text-xs text-yellow-400 text-center hidden font-bold">Klikni na START, průchozí body a CÍL.</p>
         </div>
 
         <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
@@ -304,9 +312,12 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                 <input id="new-club-tag" type="text" placeholder="Zkratka (např. TDI)" class="w-full p-2.5 text-xs bg-gray-800 border border-gray-700 rounded-lg text-white uppercase font-bold" maxlength="6" />
                 <button onclick="createNewClub()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg text-xs font-bold transition cursor-pointer">Vytvořit Klub</button>
             </div>
-            <select id="club-select" onchange="joinSelectedClub()" class="w-full p-2.5 text-xs bg-gray-800 border border-gray-700 rounded-lg text-white">
-                <option value="">Načítám kluby...</option>
-            </select>
+            <div class="space-y-1">
+                <label class="text-xs text-gray-400 font-semibold">Tůj aktivní klub:</label>
+                <select id="club-select" onchange="joinSelectedClub()" class="w-full p-2.5 text-xs bg-gray-800 border border-gray-700 rounded-lg text-white font-bold">
+                    <option value="">Načítám kluby...</option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -453,26 +464,18 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
                   if (!isAddingRoute || isOfficialRouteCreation !== isOfficial) return;
                   routePoints.push(e.latlng);
                   const idx = routePoints.length;
-                  let markerColor = idx === 1 ? 'green' : 'red';
-                  const marker = L.circleMarker(e.latlng, { radius: 7, color: markerColor, fillColor: markerColor, fillOpacity: 1 }).addTo(targetMap);
+
+                  let markerColor = 'yellow';
+                  let markerText = `${idx}`;
+                  if (idx === 1) { markerColor = 'green'; markerText = 'START'; }
+
+                  const marker = L.circleMarker(e.latlng, { radius: 8, color: markerColor, fillColor: markerColor, fillOpacity: 1 }).addTo(targetMap);
+                  marker.bindTooltip(markerText, {permanent: true, direction: 'top'}).openTooltip();
                   tempMarkers.push(marker);
 
                   if (routePoints.length >= 2) {
-                    const start = routePoints[0];
-                    const finish = routePoints[routePoints.length - 1];
-                    try {
-                      const url = `https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${finish.lng},${finish.lat}?overview=full&geometries=geojson`;
-                      const response = await fetch(url);
-                      const data = await response.json();
-                      if (data.routes && data.routes.length > 0) {
-                        const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                        routedWaypoints = coords;
-                        if (tempPolyline) targetMap.removeLayer(tempPolyline);
-                        tempPolyline = L.polyline(coords, { color: '#eab308', weight: 5 }).addTo(targetMap);
-                        if (isOfficial) document.getElementById('btn-finish-route').classList.remove('hidden');
-                        else document.getElementById('comm-admin-controls').classList.remove('hidden');
-                      }
-                    } catch (err) { console.error(err); }
+                    // Překreslení trasy přes VŠECHNY zadané body (Waypoints)
+                    updateTempRoutePolyline(targetMap);
                   }
                 });
               };
@@ -482,6 +485,53 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               const savedName = localStorage.getItem('apex_user_name');
               if(savedName) document.getElementById('reg-name').value = savedName;
             });
+
+            async function updateTempRoutePolyline(targetMap) {
+              if (routePoints.length < 2) return;
+              // Poskládáme souřadnice všech bodů oddělené středníkem pro OSRM API
+              let coordsString = routePoints.map(p => `${p.lng},${p.lat}`).join(';');
+              try {
+                const url = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.routes && data.routes.length > 0) {
+                  const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                  routedWaypoints = coords;
+                  if (tempPolyline) targetMap.removeLayer(tempPolyline);
+                  tempPolyline = L.polyline(coords, { color: '#eab308', weight: 5 }).addTo(targetMap);
+
+                  if (isOfficialRouteCreation) {
+                    document.getElementById('btn-finish-route').classList.remove('hidden');
+                    document.getElementById('btn-undo-point').classList.remove('hidden');
+                  } else {
+                    document.getElementById('comm-admin-controls').classList.remove('hidden');
+                  }
+                }
+              } catch (err) { console.error(err); }
+            }
+
+            function undoLastPoint() {
+              if (routePoints.length === 0) return;
+              routePoints.pop();
+              const lastMarker = tempMarkers.pop();
+              if (lastMarker) {
+                if (isOfficialRouteCreation) map.removeLayer(lastMarker);
+                else commMap.removeLayer(lastMarker);
+              }
+              const targetMap = isOfficialRouteCreation ? map : commMap;
+              if (routePoints.length < 2) {
+                if (tempPolyline) { targetMap.removeLayer(tempPolyline); tempPolyline = null; }
+                routedWaypoints = [];
+                if (isOfficialRouteCreation) {
+                  document.getElementById('btn-finish-route').classList.add('hidden');
+                  document.getElementById('btn-undo-point').classList.add('hidden');
+                } else {
+                  document.getElementById('comm-admin-controls').classList.add('hidden');
+                }
+              } else {
+                updateTempRoutePolyline(targetMap);
+              }
+            }
 
             function createBadgeIcon(text, isStart) {
               const bgClass = isStart ? 'pin-start' : 'pin-finish';
@@ -613,7 +663,12 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             }
 
             async function saveRunToDatabase(routeId, timeStr) {
-              const driverName = localStorage.getItem('apex_user_name') || (currentUser ? currentUser.email : 'Anonym');
+              let driverName = localStorage.getItem('apex_user_name') || (currentUser ? currentUser.email : 'Anonym');
+              const savedClubTag = localStorage.getItem('apex_user_club_tag');
+              if (savedClubTag) {
+                driverName = `${driverName} [${savedClubTag}]`;
+              }
+
               const selCarIdx = document.getElementById('active-car-select').value;
               const car = userCars[selCarIdx] ? `${userCars[selCarIdx].brand_model} (${userCars[selCarIdx].engine})` : 'Neznámé auto';
 
@@ -709,15 +764,15 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               if(tempPolyline) { tempPolyline.remove(); tempPolyline = null; }
               if (isOfficial) {
                 document.getElementById('route-hint').classList.remove('hidden');
-                alert("Klikni na START a CÍL na mapě.");
+                alert("1. Klikni na START.\n2. Klikni na libovolné průchozí body po trase.\n3. Klikni na CÍL jako poslední bod.");
               } else {
                 document.getElementById('comm-route-hint').classList.remove('hidden');
-                alert("Klikni na START a CÍL na mapě.");
+                alert("1. Klikni na START.\n2. Klikni na libovolné průchozí body po trase.\n3. Klikni na CÍL jako poslední bod.");
               }
             }
 
             async function finishAddingRoute() {
-              if (routedWaypoints.length === 0) return alert("Nejprve klikni na mapu!");
+              if (routedWaypoints.length === 0 || routePoints.length < 2) return alert("Musíš naklikat alespoň Start a Cíl!");
               const routeName = prompt("Zadej název trasy:");
               if (!routeName) return;
               const start = routePoints[0];
@@ -764,7 +819,7 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             function loadSelectedRoute() { loadRouteById(document.getElementById('route-select').value, 'official'); }
             function loadSelectedCommRoute() { loadRouteById(document.getElementById('comm-route-select').value, 'community'); }
 
-            // --- OPRAVENÉ ŽEBŘÍČKY (ČISTĚ Z DB BEZ TESTOVACÍCH DAT) ---
+            // --- ŽEBŘÍČKY ---
             function populateLeaderboardRouteSelect() {
               const type = document.getElementById('lb-type-select').value;
               const targetRoutes = type === 'official' ? officialRoutes : communityRoutes;
@@ -814,7 +869,13 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               const { data } = await db.from('clubs').select('*');
               clubsList = data || [];
               const sel = document.getElementById('club-select');
-              if(sel) sel.innerHTML = `<option value="">-- Bez klubu --</option>` + clubsList.map(c => `<option value="${c.tag}">${c.name} [${c.tag}]</option>`).join('');
+              const savedTag = localStorage.getItem('apex_user_club_tag') || '';
+
+              if(sel) {
+                sel.innerHTML = `<option value="">-- Bez klubu --</option>` + clubsList.map(c => `
+                  <option value="${c.tag}" ${c.tag === savedTag ? 'selected' : ''}>${c.name} [${c.tag}]</option>
+                `).join('');
+              }
             }
 
             async function createNewClub() {
@@ -823,12 +884,20 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
               if(!name || !tag) return alert("Vyplň název i zkratku!");
               const { error } = await db.from('clubs').insert([{ name, tag }]);
               if(error) alert("Chyba: " + error.message);
-              else { alert("Klub vytvořen!"); loadClubs(); }
+              else {
+                alert("Klub vytvořen!");
+                document.getElementById('new-club-name').value = '';
+                document.getElementById('new-club-tag').value = '';
+                loadClubs();
+              }
             }
 
             function joinSelectedClub() {
-              localStorage.setItem('apex_user_club_tag', document.getElementById('club-select').value);
-              alert("Klub uložen!");
+              const sel = document.getElementById('club-select');
+              const chosenTag = sel.value;
+              localStorage.setItem('apex_user_club_tag', chosenTag);
+              if(chosenTag) alert(`Klub [${chosenTag}] byl úspěšně uložen k tvému profilu!`);
+              else alert("Byl jsi odhlášen z klubu.");
             }
 
             // --- RADAR ---
@@ -850,8 +919,9 @@ const ADMIN_EMAIL = 'o.gajdosik11@gmail.com'; // Zde zadej svůj admin e-mail
             function toggleRadarTracking() {
               const btn = document.getElementById('btn-radar-toggle');
               const status = document.getElementById('radar-status');
-              const userName = localStorage.getItem('apex_user_name') || (currentUser ? currentUser.email : 'Anonym');
+              let userName = localStorage.getItem('apex_user_name') || (currentUser ? currentUser.email : 'Anonym');
               const clubTag = localStorage.getItem('apex_user_club_tag') || '';
+              if(clubTag) userName = `${userName} [${clubTag}]`;
 
               if(!isRadarActive) {
                 if(!navigator.geolocation) return alert("GPS není podporována.");
